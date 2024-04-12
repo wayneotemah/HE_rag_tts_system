@@ -17,45 +17,57 @@ v_db_path = os.path.join(os.getcwd(), "vdb")
 if not os.path.exists(v_db_path):
     os.mkdir(v_db_path)
 
-try:
-
-    file_path = os.path.join(
-        os.getcwd(),
-        "media",
-        "RAG_docs",
-    )
-    
-    print("we got here")
-
-    # Create a PyPDFLoader
-    loader = DirectoryLoader(file_path,glob="*.pdf",loader_cls=PyPDFLoader)
-
-    # Ensure documents are loaded
-    documents = loader.load()
-    if not documents:
-        print("No documents were loaded. Check the file path and file format.")
+class DocSeachService:
+    def __init__(self):
+        """
+        Initialize the database with the documents in the RAG_docs folder
+        """
         
-    # splitting the text into
-    child_splitter  = RecursiveCharacterTextSplitter(chunk_size=1500)
+        try:
+            logging.info("Initializing the database...")
 
-    vectorstore = Chroma(
-        collection_name="manifesto",
-        embedding_function=OpenAIEmbeddings(openai_api_key=os.getenv("openai_api_key","")),
-        persist_directory=v_db_path,
-    )
-    store = InMemoryStore()
-    
-    retriever = ParentDocumentRetriever(
-        vectorstore=vectorstore,
-        docstore=store,
-        child_splitter=child_splitter,
-        parent_splitter=None,
-    )
-    
-    retriever.add_documents(documents)
+            file_path = os.path.join(
+                os.getcwd(),
+                "media",
+                "RAG_docs",
+            )
+            # Create a PyPDFLoader
+            loader = DirectoryLoader(file_path,glob="*.pdf",loader_cls=PyPDFLoader)
 
-    # persiste the db to disk
-    vectorstore.persist()
-    print("vector database initializion is complete")
-except Exception as e:
-    print(f"An error occurred while initializing the database:\n{e}")
+            # Ensure documents are loaded
+            documents = loader.load()
+            if not documents:
+                print("No documents were loaded. Check the file path and file format.")
+                
+            # splitting the text into
+            child_splitter  = RecursiveCharacterTextSplitter(chunk_size=1500)
+
+            self.vectorstore = Chroma(
+                collection_name="manifesto",
+                embedding_function=OpenAIEmbeddings(openai_api_key=os.getenv("openai_api_key","")),
+                persist_directory=v_db_path,
+            )
+            store = InMemoryStore()
+            
+            self.retriever = ParentDocumentRetriever(
+                vectorstore=self.vectorstore,
+                docstore=store,
+                child_splitter=child_splitter,
+                parent_splitter=None,
+            )
+            self.retriever.add_documents(documents)
+
+            # persiste the db to disk
+            self.vectorstore.persist()
+        except Exception as e:
+            logging.exception(f"An error occurred while initializing the database:\n{e}")
+            raise e
+
+    def search(self, query):
+        smaller_search = self.vectorstore.similarity_search(query)
+        results = self.retriever.get_relevant_documents(query)
+        return  results
+    
+    
+doc_search_service = DocSeachService()
+__all__ = ["doc_search_service"]
