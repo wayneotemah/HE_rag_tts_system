@@ -6,5 +6,6 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path("",views.chat,name="chatbot api"),
+    path("text/",views.chat,name="chat api"),
+    path("voice/",views.voice_chat,name="voice api"),
 ]
