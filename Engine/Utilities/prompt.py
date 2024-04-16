@@ -150,7 +150,7 @@ def voice_answer(user_input:str)->str:
     url: str: The URL of the voice response.
     
     """
-    response = llm_answer(user_input)
-    url, text = TTS_API(response)
+    # response = llm_answer(user_input)
+    url, text = TTS_API(user_input)
     return url, text   
 
