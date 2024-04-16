@@ -11,7 +11,7 @@ SECRET_KEY = os.getenv("djano_secret_key")
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
