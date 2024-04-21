@@ -7,7 +7,7 @@ db.sqlite3
 staticfiles
 .venv/
 db.sqlite3
-./media/Voice/
+media/Voice/
 
 
 # Backup files # 
